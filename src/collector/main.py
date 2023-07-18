@@ -7,35 +7,45 @@ class Scraper():
     def __init__(self):
         self.driver = webdriver.Chrome()
         try:
-            self.OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+            self.OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
         except KeyError:
             self.driver.close()
-            raise KeyError("You must set environment variable OPENAI_API_KEY to your openai api key")
-        """
+            raise KeyError('You must set environment variable OPENAI_API_KEY to your openai api key')
         self.SELECTORS = {
-            "class_name": By.CLASS_NAME, 
-            "css_selector": By.CSS_SELECTOR, 
-            "id": By.ID, 
-            "name": By.NAME, 
-            "link_text": By.LINK_TEXT, 
-            "partial_link_text": By.PARTIAL_LINK_TEXT, 
-            "tag_name": By.TAG_NAME, 
-            "xpath": By.XPATH
+            'class_name': By.CLASS_NAME, 
+            'css_selector': By.CSS_SELECTOR, 
+            'id': By.ID, 
+            'name': By.NAME, 
+            'link_text': By.LINK_TEXT, 
+            'partial_link_text': By.PARTIAL_LINK_TEXT, 
+            'tag_name': By.TAG_NAME, 
+            'xpath': By.XPATH
         }
-        """
 
-    def download_website_html(self, url):
-        """
+    def download_website_html(self, url, selector, id):
+        '''
         url: url to download
         selector: selenium selector (like By.CSS_SELECTOR)
         id: element to be selected (e.g if By.CSS_SELECTOR #fname)
-        """
-        #assert selector in self.SELECTORS.keys()
+        '''
+        assert selector in self.SELECTORS.keys()
 
-        #selector = self.SELECTORS[selector]
+        selector = self.SELECTORS[selector]
 
         self.driver.get(url)
-        #self.driver.find_element(selector, id)
+
+        element = self.driver.find_element(selector, id)
+        html = element.get_attribute('innerHTML')
+
+        return html
+    
+    def _ai_completion(self, prompt, model, temp):
+        completion = openai.Completion.create(
+            model=model,
+            prompt=prompt,
+            temperature=temp
+        )
+        return [i["text"] for i in completion["choices"]]
 
     def __del__(self):
         self.driver.close()
